@@ -288,6 +288,9 @@ func (g *Generator) genStructFieldDecoder(t reflect.Type, f reflect.StructField)
 		return err
 	}
 
+	// orm.Model 设置成员为已赋值
+	fmt.Fprintf(g.out, "        out.SetFieldMark(\""+f.Name+"\")\n")
+
 	if tags.required {
 		fmt.Fprintf(g.out, "%sSet = true\n", f.Name)
 	}
@@ -416,6 +419,10 @@ func (g *Generator) genStructDecoder(t reflect.Type) error {
 	typ := g.getType(t)
 
 	fmt.Fprintln(g.out, "func "+fname+"(in *jlexer.Lexer, out *"+typ+") {")
+
+	// orm.Model 重置所有字段
+	fmt.Fprintln(g.out, "  out.ResetFieldMark()")
+
 	fmt.Fprintln(g.out, "  isTopLevel := in.IsStart()")
 	fmt.Fprintln(g.out, "  if in.IsNull() {")
 	fmt.Fprintln(g.out, "    if isTopLevel {")
@@ -471,6 +478,10 @@ func (g *Generator) genStructDecoder(t reflect.Type) error {
 		fmt.Fprintln(g.out, "      in.SkipRecursive()")
 	}
 	fmt.Fprintln(g.out, "    }")
+
+	// orm.Model 重置错误提示
+	fmt.Fprintln(g.out, resetErrorTpl)
+
 	fmt.Fprintln(g.out, "    in.WantComma()")
 	fmt.Fprintln(g.out, "  }")
 	fmt.Fprintln(g.out, "  in.Delim('}')")
@@ -478,12 +489,17 @@ func (g *Generator) genStructDecoder(t reflect.Type) error {
 	fmt.Fprintln(g.out, "    in.Consumed()")
 	fmt.Fprintln(g.out, "  }")
 
+	// orm.Model 重置EOF错误
+	fmt.Fprintln(g.out, resetEOFTpl)
+
 	for _, f := range fs {
 		g.genRequiredFieldCheck(t, f)
 	}
 
 	fmt.Fprintln(g.out, "}")
 
+	// orm.Model 设置固定Model方法
+	g.genModel(t, fs, typ)
 	return nil
 }
 

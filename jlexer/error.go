@@ -11,5 +11,10 @@ type LexerError struct {
 }
 
 func (l *LexerError) Error() string {
+	// orm.Model 重置错误提示
+	if l.Offset == 0 && l.Reason == "" {
+		return l.Data
+	}
+
 	return fmt.Sprintf("parse error: %s near offset %d of '%s'", l.Reason, l.Offset, l.Data)
 }
