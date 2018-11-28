@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+/**
+orm.Model 自定义内容
+*/
+
 const modelTpl = `
 // New{{.Typ}} 创建新的{{.Typ}}
 func New{{.Typ}}() *{{.Typ}} {
@@ -29,7 +33,7 @@ func Get{{.Typ}}Slice(ml *orm.ModelList) (items []{{.Typ}}, ok bool) {
 		return
 	}
 
-	items := *val
+	items = *val
 	return
 }
 
