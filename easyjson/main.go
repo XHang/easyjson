@@ -29,6 +29,9 @@ var specifiedName = flag.String("output_filename", "", "specify the filename of 
 var processPkg = flag.Bool("pkg", false, "process the whole package instead of just the given file")
 var disallowUnknownFields = flag.Bool("disallow_unknown_fields", true, "return error if any unknown field in json appeared")
 
+// orm.Model 增加ad参数，为 -all、-disallow_unknown_fields=false 两个参数结合体
+var ad = flag.Bool("ad", false, "-all and -disallow_unknown_fields")
+
 func generate(fname string) (err error) {
 	fInfo, err := os.Stat(fname)
 	if err != nil {
@@ -97,6 +100,12 @@ func main() {
 	} else if len(files) == 0 {
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	// orm.Model 根据 ad 使用默认参数
+	if *ad {
+		*allStructs = true
+		*disallowUnknownFields = false
 	}
 
 	for _, fname := range files {
