@@ -21,6 +21,18 @@ func (*{{.Typ}}) NewItems() interface{} {
 	return items
 }
 
+// Get{{.Typ}}Slice 从 ModelList 中获取items切片对象
+func Get{{.Typ}}Slice(ml *orm.ModelList) (items []{{.Typ}}, ok bool) {
+	var val *[]{{.Typ}}
+	val, ok = ml.Items.(*[]{{.Typ}})
+	if !ok {
+		return
+	}
+
+	items := *val
+	return
+}
+
 // BindReader 从 reader 中读取内容映射绑定
 func (v *{{.Typ}}) BindReader(reader io.Reader) error {
 	body, err := ioutil.ReadAll(reader)
