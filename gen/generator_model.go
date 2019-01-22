@@ -49,15 +49,58 @@ func (v *{{.Typ}}) BindReader(reader io.Reader) error {
 `
 
 const fieldTpl = `
-// {{.FieldName}}Mark {{.FieldName}}是否已赋值（赋值标识）
-func (v *{{.Typ}}) {{.FieldName}}Mark() bool {
-	return v.HasFieldMark("{{.FieldName}}")
+// Is{{.FieldName}}Mark {{.FieldName}}是否已赋值（赋值标识）
+func (v *{{.Typ}}) Is{{.FieldName}}Mark() bool {
+	return v.HasFieldMark(v.Get{{.FieldName}}FieldMarkKey())
 }
 
 // Set{{.FieldName}} 设置{{.FieldName}}}的值，并将赋值标识设为:true
 func (v *{{.Typ}}) Set{{.FieldName}}(val {{.FieldTyp}}) {
 	v.{{.FieldName}} = val
-	v.SetFieldMark("{{.FieldName}}")
+	v.Mark{{.FieldName}}()
+}
+
+// UnMark{{.FieldName}} 取消{{.FieldName}}}的赋值标识，设为:false
+func (v *{{.Typ}}) UnMark{{.FieldName}}() {
+	v.SetFieldMark(v.Get{{.FieldName}}FieldMarkKey(), false)
+}
+
+// Mark{{.FieldName}} 设置{{.FieldName}}}的赋值标识，设为:true
+func (v *{{.Typ}}) Mark{{.FieldName}}() {
+	v.SetFieldMark(v.Get{{.FieldName}}FieldMarkKey(), true)
+}
+
+// Mark{{.FieldName}}FieldMarkKey 获取FieldMarkKey
+func (v *{{.Typ}}) Get{{.FieldName}}FieldMarkKey() string {
+	return "{{.FieldMarkKey}}"
+}
+`
+
+const fieldIgnoreTpl = `
+// Is{{.FieldName}}Mark {{.FieldName}}是否已赋值（赋值标识）
+func (v *{{.Typ}}) Is{{.FieldName}}Mark() bool {
+	return false
+}
+
+// Set{{.FieldName}} 设置{{.FieldName}}}的值，并将赋值标识设为:true
+func (v *{{.Typ}}) Set{{.FieldName}}(val {{.FieldTyp}}) {
+	v.{{.FieldName}} = val
+	v.Mark{{.FieldName}}()
+}
+
+// UnMark{{.FieldName}} 取消{{.FieldName}}}的赋值标识，设为:false(xorm:"-"时，该方法不操作赋值标识)
+func (v *{{.Typ}}) UnMark{{.FieldName}}() {
+	//v.fieldMark[v.Get{{.FieldName}}FieldMarkKey()] = false
+}
+
+// Mark{{.FieldName}} 设置{{.FieldName}}}的赋值标识，设为:true(xorm:"-"时，该方法不操作赋值标识)
+func (v *{{.Typ}}) Mark{{.FieldName}}() {
+	//v.fieldMark[v.Get{{.FieldName}}FieldMarkKey()] = true
+}
+
+// Mark{{.FieldName}}FieldMarkKey 获取FieldMarkKey(xorm:"-"时，FieldMarkKey为空)
+func (v *{{.Typ}}) Get{{.FieldName}}FieldMarkKey() string {
+	return ""
 }
 `
 
@@ -89,8 +132,25 @@ func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ strin
 			continue
 		}
 
-		fieldStr := strings.Replace(fieldTpl, "{{.FieldName}}", f.Name, -1)
-		fieldStr = strings.Replace(fieldStr, "{{.FieldTyp}}", g.getType(f.Type), -1)
+		var fieldStr string
+
+		xormField, _ := parseXormFieldName(f)
+		if xormField == "-" { // xorm:"-" 忽略fileMarks操作标识
+
+			fieldStr = strings.Replace(fieldIgnoreTpl, "{{.FieldName}}", f.Name, -1)
+			fieldStr = strings.Replace(fieldStr, "{{.FieldTyp}}", g.getType(f.Type), -1)
+
+		} else {
+			if xormField == "" {
+				xormField = f.Name // 没有设置xorm字段名，取结构体属性名
+			}
+
+			fieldMarkKey := xormField
+
+			fieldStr = strings.Replace(fieldTpl, "{{.FieldName}}", f.Name, -1)          // {{.FieldName}}: 对外显示的方法(属性)名
+			fieldStr = strings.Replace(fieldStr, "{{.FieldMarkKey}}", fieldMarkKey, -1) // {{.FieldMarkKey}}: fieldMark实际的keyName
+			fieldStr = strings.Replace(fieldStr, "{{.FieldTyp}}", g.getType(f.Type), -1)
+		}
 
 		modelStr += fieldStr
 	}
