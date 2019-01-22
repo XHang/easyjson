@@ -289,7 +289,7 @@ func (g *Generator) genStructFieldDecoder(t reflect.Type, f reflect.StructField)
 	}
 
 	// orm.Model 设置成员为已赋值
-	fmt.Fprintf(g.out, "        out.SetFieldMark(\""+f.Name+"\")\n")
+	fmt.Fprintf(g.out, "        out.Mark"+f.Name+"()\n")
 
 	if tags.required {
 		fmt.Fprintf(g.out, "%sSet = true\n", f.Name)
