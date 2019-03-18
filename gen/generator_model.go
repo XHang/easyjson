@@ -11,6 +11,11 @@ orm.Model 自定义内容
 */
 
 const modelTpl = `
+// init 注册数据引擎
+func init() {
+	orm.RegisterAlias(&{{.Typ}}{})
+}
+
 // New{{.Typ}} 创建新的{{.Typ}}
 func New{{.Typ}}() *{{.Typ}} {
 	v := &{{.Typ}}{}
