@@ -421,7 +421,7 @@ func (g *Generator) genStructDecoder(t reflect.Type) error {
 	fmt.Fprintln(g.out, "func "+fname+"(in *jlexer.Lexer, out *"+typ+") {")
 
 	// orm.Model 重置所有字段
-	fmt.Fprintln(g.out, "  out.ResetFieldMark()")
+	fmt.Fprintln(g.out, "  out.ResetMark()")
 
 	fmt.Fprintln(g.out, "  isTopLevel := in.IsStart()")
 	fmt.Fprintln(g.out, "  if in.IsNull() {")

@@ -19,7 +19,7 @@ func init() {
 // New{{.Typ}} 创建新的{{.Typ}}
 func New{{.Typ}}() *{{.Typ}} {
 	v := &{{.Typ}}{}
-	v.ResetFieldMark()
+	v.ResetMark()
 	return v
 }
 
@@ -36,7 +36,7 @@ func Get{{.Typ}}Slice(ml *orm.ModelList) (items []{{.Typ}}, ok bool) {
 	val, ok = ml.Items.(*[]{{.Typ}})
 	if !ok {
 		return
-	}
+	} 
 
 	items = *val
 	return
@@ -56,7 +56,7 @@ func (v *{{.Typ}}) BindReader(reader io.Reader) error {
 const fieldTpl = `
 // Is{{.FieldName}}Mark {{.FieldName}}是否已赋值（赋值标识）
 func (v *{{.Typ}}) Is{{.FieldName}}Mark() bool {
-	return v.HasFieldMark(v.Get{{.FieldName}}FieldMarkKey())
+	return v.HasPropertyMark(v.Get{{.FieldName}}MarkKey())
 }
 
 // Set{{.FieldName}} 设置{{.FieldName}}}的值，并将赋值标识设为:true
@@ -67,24 +67,26 @@ func (v *{{.Typ}}) Set{{.FieldName}}(val {{.FieldTyp}}) {
 
 // UnMark{{.FieldName}} 取消{{.FieldName}}}的赋值标识，设为:false
 func (v *{{.Typ}}) UnMark{{.FieldName}}() {
-	v.SetFieldMark(v.Get{{.FieldName}}FieldMarkKey(), false)
+	v.SetPropertyMark(v.Get{{.FieldName}}MarkKey(), false)
+	v.SetFieldMark(v.Get{{.FieldName}}MarkKey(), false)
 }
 
 // Mark{{.FieldName}} 设置{{.FieldName}}}的赋值标识，设为:true
 func (v *{{.Typ}}) Mark{{.FieldName}}() {
-	v.SetFieldMark(v.Get{{.FieldName}}FieldMarkKey(), true)
+	v.SetPropertyMark(v.Get{{.FieldName}}MarkKey(), true)
+	v.SetFieldMark(v.Get{{.FieldName}}MarkKey(), true)
 }
 
-// Mark{{.FieldName}}FieldMarkKey 获取FieldMarkKey
-func (v *{{.Typ}}) Get{{.FieldName}}FieldMarkKey() string {
-	return "{{.FieldMarkKey}}"
+// Get{{.FieldName}}MarkKey 获取MarkKey
+func (v *{{.Typ}}) Get{{.FieldName}}MarkKey() string {
+	return "{{.MarkKey}}"
 }
 `
 
 const fieldIgnoreTpl = `
 // Is{{.FieldName}}Mark {{.FieldName}}是否已赋值（赋值标识）
 func (v *{{.Typ}}) Is{{.FieldName}}Mark() bool {
-	return false
+	return v.HasPropertyMark(v.Get{{.FieldName}}MarkKey())
 }
 
 // Set{{.FieldName}} 设置{{.FieldName}}}的值，并将赋值标识设为:true
@@ -93,19 +95,21 @@ func (v *{{.Typ}}) Set{{.FieldName}}(val {{.FieldTyp}}) {
 	v.Mark{{.FieldName}}()
 }
 
-// UnMark{{.FieldName}} 取消{{.FieldName}}}的赋值标识，设为:false(xorm:"-"时，该方法不操作赋值标识)
+// UnMark{{.FieldName}} 取消{{.FieldName}}}的赋值标识，设为:false
 func (v *{{.Typ}}) UnMark{{.FieldName}}() {
-	//v.fieldMark[v.Get{{.FieldName}}FieldMarkKey()] = false
+	v.SetPropertyMark(v.Get{{.FieldName}}MarkKey(), false)
+	//v.SetFieldMark(v.Get{{.FieldName}}MarkKey(), false) tag的xorm为"-"
 }
 
-// Mark{{.FieldName}} 设置{{.FieldName}}}的赋值标识，设为:true(xorm:"-"时，该方法不操作赋值标识)
+// Mark{{.FieldName}} 设置{{.FieldName}}}的赋值标识，设为:true
 func (v *{{.Typ}}) Mark{{.FieldName}}() {
-	//v.fieldMark[v.Get{{.FieldName}}FieldMarkKey()] = true
+	v.SetPropertyMark(v.Get{{.FieldName}}MarkKey(), true)
+	//v.SetFieldMark(v.Get{{.FieldName}}MarkKey(), true) tag的xorm为"-"
 }
 
-// Mark{{.FieldName}}FieldMarkKey 获取FieldMarkKey(xorm:"-"时，FieldMarkKey为空)
-func (v *{{.Typ}}) Get{{.FieldName}}FieldMarkKey() string {
-	return ""
+// Get{{.FieldName}}FieldMarkKey 获取MarkKey
+func (v *{{.Typ}}) Get{{.FieldName}}MarkKey() string {
+	return "{{.MarkKey}}"
 }
 `
 
@@ -143,6 +147,7 @@ func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ strin
 		if xormField == "-" { // xorm:"-" 忽略fileMarks操作标识
 
 			fieldStr = strings.Replace(fieldIgnoreTpl, "{{.FieldName}}", f.Name, -1)
+			fieldStr = strings.Replace(fieldStr, "{{.MarkKey}}", f.Name, -1)
 			fieldStr = strings.Replace(fieldStr, "{{.FieldTyp}}", g.getType(f.Type), -1)
 
 		} else {
@@ -152,8 +157,8 @@ func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ strin
 
 			fieldMarkKey := xormField
 
-			fieldStr = strings.Replace(fieldTpl, "{{.FieldName}}", f.Name, -1)          // {{.FieldName}}: 对外显示的方法(属性)名
-			fieldStr = strings.Replace(fieldStr, "{{.FieldMarkKey}}", fieldMarkKey, -1) // {{.FieldMarkKey}}: fieldMark实际的keyName
+			fieldStr = strings.Replace(fieldTpl, "{{.FieldName}}", f.Name, -1)     // {{.FieldName}}: 对外显示的方法(属性)名
+			fieldStr = strings.Replace(fieldStr, "{{.MarkKey}}", fieldMarkKey, -1) // {{.MarkKey}}: fieldMark实际的keyName
 			fieldStr = strings.Replace(fieldStr, "{{.FieldTyp}}", g.getType(f.Type), -1)
 		}
 
