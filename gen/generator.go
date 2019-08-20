@@ -67,7 +67,7 @@ func NewGenerator(filename string) *Generator {
 			"io":                              "io",
 			"io/ioutil":                       "ioutil",
 			"strings":                         "strings",
-			"amiba.io/amiba/go-component/orm": "orm",
+			"amiba.fun/amiba/go-component/orm": "orm",
 		},
 		fieldNamer:    DefaultFieldNamer{},
 		marshalers:    make(map[reflect.Type]bool),
