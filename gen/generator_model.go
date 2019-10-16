@@ -135,11 +135,12 @@ func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ strin
 
 	for _, f := range fs {
 		// jsonName := g.fieldNamer.GetJSONFieldName(t, f)
-		tags := parseFieldTags(f)
 
-		if tags.omit {
-			continue
-		}
+		// 2019-10-16 注释
+		// tags := parseFieldTags(f)
+		// if tags.omit {
+		// 	continue
+		// }
 
 		var fieldStr string
 
