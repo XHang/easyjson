@@ -55,17 +55,18 @@ func (v *{{.Typ}}) BindReader(reader io.Reader) error {
 // DBFields 数据库字段
 func (v *{{.Typ}}) DBFields() []string {
 	fields := "{{.DBFields}}"
-	return strings.Join(fields, ",")
+	return strings.Split(fields, ",")
 }
 
 // DBFieldsIndex 数据库字段索引
 func (v *{{.Typ}}) DBFieldsIndex() map[string]struct{} {
 	fields := v.DBFields()
-	lenFields = len(fields)
-	index := make(map[string]struct{},lenFields)
-	for i := 0; i < lenFields; i++{
+	l := len(fields)
+	index := make(map[string]struct{},l)
+	for i := 0; i < l; i++{
 		index[fields[i]]=struct{}{}
 	}
+	return index
 }
 `
 
