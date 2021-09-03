@@ -58,7 +58,7 @@ func (v *{{.Typ}}) DBFields() []string {
 	return strings.Split(fields, ",")
 }
 
-// DBFieldsIndex 数据库字段索引
+// DBFieldsIndex 数据库字段索引 大小写敏感
 func (v *{{.Typ}}) DBFieldsIndex() map[string]struct{} {
 	fields := v.DBFields()
 	l := len(fields)
