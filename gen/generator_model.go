@@ -51,6 +51,23 @@ func (v *{{.Typ}}) BindReader(reader io.Reader) error {
 
 	return v.UnmarshalJSON(body)
 }
+
+// DBFields 数据库字段
+func (v *{{.Typ}}) DBFields() []string {
+	fields := "{{.DBFields}}"
+	return strings.Split(fields, ",")
+}
+
+// DBFieldsIndex 数据库字段索引 大小写敏感
+func (v *{{.Typ}}) DBFieldsIndex() map[string]struct{} {
+	fields := v.DBFields()
+	l := len(fields)
+	index := make(map[string]struct{},l)
+	for i := 0; i < l; i++{
+		index[fields[i]]=struct{}{}
+	}
+	return index
+}
 `
 
 const fieldTpl = `
@@ -133,6 +150,7 @@ const resetErrorTpl = `		if err := in.Error(); err != nil {
 func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ string) {
 	modelStr := modelTpl
 
+	dbFields := make([]string, 0)
 	for _, f := range fs {
 		// jsonName := g.fieldNamer.GetJSONFieldName(t, f)
 
@@ -156,6 +174,7 @@ func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ strin
 				xormField = f.Name // 没有设置xorm字段名，取结构体属性名
 			}
 
+			dbFields = append(dbFields, xormField)
 			fieldMarkKey := xormField
 
 			fieldStr = strings.Replace(fieldTpl, "{{.FieldName}}", f.Name, -1)     // {{.FieldName}}: 对外显示的方法(属性)名
@@ -167,6 +186,7 @@ func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ strin
 	}
 
 	modelStr = strings.Replace(modelStr, "{{.Typ}}", typ, -1)
+	modelStr = strings.Replace(modelStr, "{{.DBFields}}", strings.Join(dbFields, ","), -1)
 
 	fmt.Fprintln(g.out, modelStr)
 }
