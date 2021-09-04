@@ -58,13 +58,54 @@ func (v *{{.Typ}}) DBFields() []string {
 	return strings.Split(fields, ",")
 }
 
+// DBFieldJSONTags 数据库字段对应的json tag name
+func (v *{{.Typ}}) DBFieldJSONTags() []string {
+	names := "{{.DBFieldJSONTags}}"
+	return strings.Split(names, ",")
+}
+
 // DBFieldsIndex 数据库字段索引 大小写敏感
 func (v *{{.Typ}}) DBFieldsIndex() map[string]struct{} {
 	fields := v.DBFields()
 	l := len(fields)
-	index := make(map[string]struct{},l)
+	index := make(map[string]struct{}, l)
 	for i := 0; i < l; i++{
-		index[fields[i]]=struct{}{}
+		index[fields[i]] = struct{}{}
+	}
+	return index
+}
+
+// DBFieldJSONNamesIndex 数据库字段对应的json name 索引 大小写敏感
+func (v *{{.Typ}}) DBFieldJSONNamesIndex() map[string]struct{} {
+	names := v.DBFieldJSONTags()
+	l := len(names)
+	index := make(map[string]struct{}, l)
+	for i := 0; i < l; i++{
+		index[names[i]] = struct{}{}
+	}
+	return index
+}
+
+// DBFieldJSONNameIndex 数据库字段为Key, json name 为 value 索引; 大小写敏感
+func (v *{{.Typ}}) DBFieldJSONNameIndex() map[string]string {
+	fields := v.DBFields()
+	names := v.DBFieldJSONTags()
+	l := len(names)
+	index := make(map[string]string, l)
+	for i := 0; i < l; i++{
+		index[fields[i]] = names[i]
+	}
+	return index
+}
+
+// JSONNameDBFieldIndex json name 为Key, 数据库字段 为 value 索引; 大小写敏感
+func (v *{{.Typ}}) JSONNameDBFieldIndex() map[string]string {
+	fields := v.DBFields()
+	names := v.DBFieldJSONTags()
+	l := len(names)
+	index := make(map[string]string, l)
+	for i := 0; i < l; i++{
+		index[names[i]] = fields[i]
 	}
 	return index
 }
@@ -151,6 +192,7 @@ func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ strin
 	modelStr := modelTpl
 
 	dbFields := make([]string, 0)
+	dbFieldJsonTags := make([]string, 0)
 	for _, f := range fs {
 		// jsonName := g.fieldNamer.GetJSONFieldName(t, f)
 
@@ -175,6 +217,7 @@ func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ strin
 			}
 
 			dbFields = append(dbFields, xormField)
+			dbFieldJsonTags = append(dbFieldJsonTags, g.fieldNamer.GetJSONFieldName(t, f))
 			fieldMarkKey := xormField
 
 			fieldStr = strings.Replace(fieldTpl, "{{.FieldName}}", f.Name, -1)     // {{.FieldName}}: 对外显示的方法(属性)名
@@ -187,6 +230,7 @@ func (g *Generator) genModel(t reflect.Type, fs []reflect.StructField, typ strin
 
 	modelStr = strings.Replace(modelStr, "{{.Typ}}", typ, -1)
 	modelStr = strings.Replace(modelStr, "{{.DBFields}}", strings.Join(dbFields, ","), -1)
+	modelStr = strings.Replace(modelStr, "{{.DBFieldJSONTags}}", strings.Join(dbFieldJsonTags, ","), -1)
 
 	fmt.Fprintln(g.out, modelStr)
 }
