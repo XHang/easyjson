@@ -44,7 +44,7 @@ func Get{{.Typ}}Slice(ml *orm.ModelList) (items []{{.Typ}}, ok bool) {
 
 // BindReader 从 reader 中读取内容映射绑定
 func (v *{{.Typ}}) BindReader(reader io.Reader) error {
-	body, err := ioutil.ReadAll(reader)
+	body, err := io.ReadAll(reader)
 	if err != nil {
 		return err
 	}

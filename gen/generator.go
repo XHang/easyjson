@@ -60,13 +60,12 @@ func NewGenerator(filename string) *Generator {
 	// orm.Model 增加自定义引用包
 	ret := &Generator{
 		imports: map[string]string{
-			pkgWriter:                         "jwriter",
-			pkgLexer:                          "jlexer",
-			pkgEasyJSON:                       "easyjson",
-			"encoding/json":                   "json",
-			"io":                              "io",
-			"io/ioutil":                       "ioutil",
-			"strings":                         "strings",
+			pkgWriter:                          "jwriter",
+			pkgLexer:                           "jlexer",
+			pkgEasyJSON:                        "easyjson",
+			"encoding/json":                    "json",
+			"io":                               "io",
+			"strings":                          "strings",
 			"amiba.fun/amiba/go-component/orm": "orm",
 		},
 		fieldNamer:    DefaultFieldNamer{},

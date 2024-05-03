@@ -170,7 +170,6 @@ func (g *Generator) Run() error {
 	}
 
 	os.Setenv("GIN_MODE", "release")
-	
 	cmd := exec.Command("go", "run", "-tags", g.BuildTags, filepath.Base(path))
 	cmd.Stdout = f
 	cmd.Stderr = os.Stderr
