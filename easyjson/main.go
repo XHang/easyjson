@@ -32,6 +32,9 @@ var disallowUnknownFields = flag.Bool("disallow_unknown_fields", true, "return e
 // orm.Model 增加ad参数，为 -all、-disallow_unknown_fields=false 两个参数结合体
 var ad = flag.Bool("ad", false, "-all and -disallow_unknown_fields")
 
+// ExcludeNULL for object fields, such as array, and object, return empty data like {} or []  instead of null when unmarshalling
+var ExcludeNULL = flag.Bool("eu", false, "-eu")
+
 func generate(fname string) (err error) {
 	fInfo, err := os.Stat(fname)
 	if err != nil {
@@ -77,6 +80,7 @@ func generate(fname string) (err error) {
 		OutName:               outName,
 		StubsOnly:             *stubs,
 		NoFormat:              *noformat,
+		ExcludeNULL:           *ExcludeNULL,
 	}
 
 	if err := g.Run(); err != nil {

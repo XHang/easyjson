@@ -36,6 +36,7 @@ type Generator struct {
 	noStdMarshalers       bool
 	omitEmpty             bool
 	disallowUnknownFields bool
+	excludeNULL           bool
 	fieldNamer            FieldNamer
 
 	// package path to local alias map for tracking imports
@@ -118,6 +119,11 @@ func (g *Generator) NoStdMarshalers() {
 // DisallowUnknownFields instructs not to skip unknown fields in json and return error.
 func (g *Generator) DisallowUnknownFields() {
 	g.disallowUnknownFields = true
+}
+
+// ExcludeNull Do not return NULL when fields such as array,object is null.
+func (g *Generator) ExcludeNull() {
+	g.excludeNULL = true
 }
 
 // OmitEmpty triggers `json=",omitempty"` behaviour by default.

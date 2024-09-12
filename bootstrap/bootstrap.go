@@ -31,9 +31,10 @@ type Generator struct {
 	OutName   string
 	BuildTags string
 
-	StubsOnly  bool
-	LeaveTemps bool
-	NoFormat   bool
+	StubsOnly   bool
+	LeaveTemps  bool
+	NoFormat    bool
+	ExcludeNULL bool
 }
 
 // writeStub outputs an initial stubs for marshalers/unmarshalers so that the package
@@ -123,6 +124,9 @@ func (g *Generator) writeMain() (path string, err error) {
 	}
 	if g.DisallowUnknownFields {
 		fmt.Fprintln(f, "  g.DisallowUnknownFields()")
+	}
+	if g.ExcludeNULL {
+		fmt.Fprintln(f, "  g.ExcludeNull()")
 	}
 
 	sort.Strings(g.Types)

@@ -131,7 +131,11 @@ func (g *Generator) genTypeDecoderNoCheck(t reflect.Type, out string, tags field
 
 			fmt.Fprintln(g.out, ws+"if in.IsNull() {")
 			fmt.Fprintln(g.out, ws+"  in.Skip()")
-			fmt.Fprintln(g.out, ws+"  "+out+" = nil")
+			if g.excludeNULL {
+				fmt.Fprintln(g.out, ws+"  "+out+" = []")
+			} else {
+				fmt.Fprintln(g.out, ws+"  "+out+" = nil")
+			}
 			fmt.Fprintln(g.out, ws+"} else {")
 			fmt.Fprintln(g.out, ws+"  in.Delim('[')")
 			fmt.Fprintln(g.out, ws+"  if "+out+" == nil {")
@@ -203,7 +207,11 @@ func (g *Generator) genTypeDecoderNoCheck(t reflect.Type, out string, tags field
 	case reflect.Ptr:
 		fmt.Fprintln(g.out, ws+"if in.IsNull() {")
 		fmt.Fprintln(g.out, ws+"  in.Skip()")
-		fmt.Fprintln(g.out, ws+"  "+out+" = nil")
+		if g.excludeNULL {
+			fmt.Fprintln(g.out, ws+"  "+out+" = {}")
+		} else {
+			fmt.Fprintln(g.out, ws+"  "+out+" = nil")
+		}
 		fmt.Fprintln(g.out, ws+"} else {")
 		fmt.Fprintln(g.out, ws+"  if "+out+" == nil {")
 		fmt.Fprintln(g.out, ws+"    "+out+" = new("+g.getType(t.Elem())+")")
